@@ -159,24 +159,10 @@ export class RepositoryRecrutador {
 	}
 
 	async getAllVaga(id: string) {
-		const allVaga = await this.vagaRepository.find({
+		return await this.vagaRepository.find({
 			where: { uidRecrutador: id },
+			relations: ['aplicacoes.candidato'],
 		});
-		const compileVaga = allVaga.map((vaga) => {
-			return new Vaga(
-				vaga.uid,
-				vaga.descricao,
-				vaga.empresa,
-				vaga.dataLimite,
-				vaga.status,
-				vaga.uidRecrutador,
-				vaga.numeroMaximoCandidatos,
-				vaga.created_at,
-				vaga.updated_at
-			);
-		});
-
-		return compileVaga;
 	}
 
 	async deleteVaga(id_vaga: string) {

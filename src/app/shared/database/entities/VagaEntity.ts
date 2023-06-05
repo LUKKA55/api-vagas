@@ -40,9 +40,7 @@ export class VagaEntity extends BaseEntity {
 	@Column()
 	updated_at!: string;
 
-	@ManyToOne(() => RecrutadorEntity, (recrutador) => recrutador.vagasCriadas, {
-		eager: true,
-	})
+	@ManyToOne(() => RecrutadorEntity, (recrutador) => recrutador.vagasCriadas)
 	@JoinColumn({ name: 'uidrecrutador', referencedColumnName: 'uid' })
 	recrutador?: RecrutadorEntity;
 
