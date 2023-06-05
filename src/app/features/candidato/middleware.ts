@@ -5,6 +5,7 @@ import { envs } from '../../envs/envsObject';
 import jwt from 'jsonwebtoken';
 import { VagaEntity } from '../../shared/database/entities/VagaEntity';
 import { Vaga } from '../../models/vaga';
+import { VagaCandidatoEntity } from '../../shared/database/entities/VagaCandidatoEntity';
 
 export const validateBody = (
 	req: Request,
@@ -107,6 +108,15 @@ export const validateVaga = async (
 	if (vaga.dataLimite === new Date().toLocaleDateString()) {
 		await url.update({ uid: vaga.uid }, { status: false });
 		res.status(200).json({ message: 'Data limite excedida' });
+	}
+
+	const candidatura = await DatabaseConnection.client.manager
+		.getRepository(VagaCandidatoEntity)
+		.findOne({
+			where: { uidCandidato: req.params.id, uidVaga: req.params.id_vaga },
+		});
+	if (candidatura !== null) {
+		res.status(200).json({ message: 'Você já se candidatou a está vaga' });
 	}
 	next();
 };

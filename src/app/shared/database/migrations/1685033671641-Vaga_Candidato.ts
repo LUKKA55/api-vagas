@@ -7,14 +7,17 @@ export class VagaCandidato1685033671641 implements MigrationInterface {
 				name: 'vaga_candidato',
 				columns: [
 					{
-						name: 'uidVaga',
-						type: 'varchar',
+						name: 'uid',
+						type: 'uuid',
 						isPrimary: true,
 					},
 					{
+						name: 'uidVaga',
+						type: 'uuid',
+					},
+					{
 						name: 'uidCandidato',
-						type: 'varchar',
-						isPrimary: true,
+						type: 'uuid',
 					},
 				],
 				foreignKeys: [

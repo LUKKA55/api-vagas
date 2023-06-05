@@ -129,6 +129,5 @@ export class RepositoryCandidato {
 			.getRepository(VagaCandidatoEntity)
 			.create({ uid: v4(), uidCandidato: id, uidVaga: id_vaga })
 			.save();
-		console.log('chego');
 	}
 }
