@@ -18,35 +18,34 @@ import { deleteVagaController } from './controller/deleteVagaController';
 export const recrutadorRoutes = Router();
 
 recrutadorRoutes.put(
-	'/:id/vaga/:id_vaga',
+	'/updateOneVaga/:id_vaga',
 	validateTokenRecrutador,
 	validateIdRecrutadorVaga,
 	validateCreateVaga,
 	updateVagaController
 );
 recrutadorRoutes.put(
-	'/:id',
+	'/updateOneRecrutador',
 	validateTokenRecrutador,
-	validateGetByIdRecrutador,
 	validateUpdateRecrutador,
 	updateRecrutadorController
 );
 recrutadorRoutes.get('/', validateTokenRecrutador, getAllRecrutadorController);
 recrutadorRoutes.get(
-	'/:id',
+	'/getAllVagaByRecrutador',
 	validateTokenRecrutador,
 	getAllVagaByRecrutadorController
 );
 recrutadorRoutes.post('/login', validateBody, loginRecrutadorController);
 recrutadorRoutes.post(
-	'/:id',
+	'/createVaga',
 	validateTokenRecrutador,
 	validateBody,
 	validateCreateVaga,
 	createVagaController
 );
 recrutadorRoutes.delete(
-	'/:id/vaga/:id_vaga',
+	'/deleteOneVaga/:id_vaga',
 	validateTokenRecrutador,
 	validateIdRecrutadorVaga,
 	deleteVagaController

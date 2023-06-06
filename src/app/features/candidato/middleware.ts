@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { VagaEntity } from '../../shared/database/entities/VagaEntity';
 import { Vaga } from '../../models/vaga';
 import { VagaCandidatoEntity } from '../../shared/database/entities/VagaCandidatoEntity';
+import { getIdByToken } from '../../utils/getIdByToken';
 
 export const validateBody = (
 	req: Request,
@@ -63,7 +64,7 @@ export const validateGetByIdCandidato = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const find = DatabaseConnection.client.manager
+	const find = await DatabaseConnection.client.manager
 		.getRepository(CandidatoEntity)
 		.findOne({ where: { uid: req.params.id } });
 	if (!find) {
@@ -96,6 +97,7 @@ export const validateVaga = async (
 	res: Response,
 	next: NextFunction
 ) => {
+	const uid = getIdByToken(req.headers.authorization as string);
 	const url = DatabaseConnection.client.manager.getRepository(VagaEntity);
 	const vaga = await url.findOne({ where: { uid: req.params.id_vaga } });
 	if (!vaga) {
@@ -113,7 +115,7 @@ export const validateVaga = async (
 	const candidatura = await DatabaseConnection.client.manager
 		.getRepository(VagaCandidatoEntity)
 		.findOne({
-			where: { uidCandidato: req.params.id, uidVaga: req.params.id_vaga },
+			where: { uidCandidato: uid, uidVaga: req.params.id_vaga },
 		});
 	if (candidatura !== null) {
 		res.status(200).json({ message: 'Você já se candidatou a está vaga' });

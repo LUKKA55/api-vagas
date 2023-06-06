@@ -202,6 +202,6 @@ export class RepositoryAdmin {
 			{ expiresIn: '6h' }
 		);
 
-		return token;
+		return { token: token, uid: find.uid, name: find.name };
 	}
 }

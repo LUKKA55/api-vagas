@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { envs } from '../../envs/envsObject';
 import { IRecrutador } from '../../models/interface/IRecrutador';
 import { VagaEntity } from '../../shared/database/entities/VagaEntity';
+import { getIdByToken } from '../../utils/getIdByToken';
 require('dotenv').config({ path: './src/app/envs/.env' });
 
 export const validateBody = (
@@ -97,18 +98,8 @@ export const validateCreateVaga = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const id = req.params.id;
 	const { descrição, empresa, dataLimite, status, numeroMaximoCandidatos } =
 		req.body;
-
-	const find = await DatabaseConnection.client.manager
-		.getRepository(RecrutadorEntity)
-		.findOne({ where: { uid: id, tipo: 'recrutador' } });
-	if (!find) {
-		return res
-			.status(404)
-			.json({ message: 'Apenas Recrutadores podem cadastrar vagas' });
-	}
 
 	if (descrição) {
 		if (typeof descrição !== 'string') {
@@ -174,18 +165,21 @@ export const validateIdRecrutadorVaga = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const { id, id_vaga } = req.params;
+	const { id_vaga } = req.params;
+	const uid = getIdByToken(req.headers.authorization as string);
+
 	if (
-		!DatabaseConnection.client.manager
+		(await DatabaseConnection.client.manager
 			.getRepository(VagaEntity)
-			.findOne({ where: { uid: id_vaga } })
+			.findOne({ where: { uid: id_vaga } })) === null
 	) {
 		res.status(404).json({ message: 'Vaga não encontrada' });
 	}
+
 	if (
-		!DatabaseConnection.client.manager
+		(await DatabaseConnection.client.manager
 			.getRepository(VagaEntity)
-			.findOne({ where: { uid: id_vaga, uidRecrutador: id } })
+			.findOne({ where: { uid: id_vaga, uidRecrutador: uid } })) === null
 	) {
 		res
 			.status(404)

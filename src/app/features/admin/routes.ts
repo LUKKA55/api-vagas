@@ -19,20 +19,9 @@ import { loginAdminController } from './controller/loginAdminController';
 
 const adminRoutes = Router();
 
-adminRoutes.post(
-	'/',
-	validateTokenAdmin,
-	validateBody,
-	validateCreateAdmin,
-	createAdminController
-);
-adminRoutes.get('/', validateTokenAdmin, validateTipo, getAllController);
-adminRoutes.get(
-	'/:id',
-	validateTokenAdmin,
-	validateGetByIdAdmin,
-	getByIdAdminController
-);
+adminRoutes.post('/', validateBody, validateCreateAdmin, createAdminController);
+adminRoutes.get('/', validateTokenAdmin, getAllController);
+adminRoutes.get('/getOneAdmin', validateTokenAdmin, getByIdAdminController);
 adminRoutes.delete(
 	'/:id',
 	validateTokenAdmin,
@@ -40,22 +29,21 @@ adminRoutes.delete(
 	deleteAdminController
 );
 adminRoutes.put(
-	'/:id',
+	'/updateOneAdmin',
 	validateTokenAdmin,
-	validateGetByIdAdmin,
 	validateCreateAdmin,
 	updateAdminController
 );
 adminRoutes.post('/login', validateBody, loginAdminController);
 adminRoutes.post(
-	'/:id',
+	'/createRecrutador',
 	validateTokenAdmin,
 	validateBody,
 	validateCreateRecrutador,
 	createRecrutadorController
 );
 adminRoutes.delete(
-	'/:id/:idRecrutador',
+	'/deleteRecrutador/:idRecrutador',
 	validateTokenAdmin,
 	validateDeleteRecrutador,
 	deleteRecrutadorController

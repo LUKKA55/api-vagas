@@ -81,16 +81,6 @@ export const validateCreateRecrutador = async (
 	next: NextFunction
 ) => {
 	const { name, email, password, nomeEmpresa, tipo } = req.body;
-	const id = req.params.id;
-
-	const find = await DatabaseConnection.client.manager
-		.getRepository(AdminEntity)
-		.findOne({ where: { uid: id, tipo: 'admin' } });
-	if (!find) {
-		return res
-			.status(404)
-			.json({ message: 'Apenas Admin podem cadastrar recrutadores' });
-	}
 
 	if (name) {
 		if (typeof name !== 'string')
@@ -142,16 +132,7 @@ export const validateDeleteRecrutador = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const { id, idRecrutador } = req.params;
-
-	const findAdmin = await DatabaseConnection.client.manager
-		.getRepository(AdminEntity)
-		.findOne({ where: { uid: id, tipo: 'admin' } });
-	if (!findAdmin) {
-		return res
-			.status(404)
-			.json({ message: 'Apenas Admin podem deletar recrutadores' });
-	}
+	const { idRecrutador } = req.params;
 
 	const findRecrutador = await DatabaseConnection.client.manager
 		.getRepository(RecrutadorEntity)
@@ -162,21 +143,15 @@ export const validateDeleteRecrutador = async (
 	next();
 };
 
-export const validateTipo = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
-	const { tipo } = req.query;
+export const validateTipo = (tipo: string) => {
 	if (
 		tipo !== 'admin' &&
 		tipo !== 'recrutador' &&
 		tipo !== 'candidato' &&
 		tipo !== undefined
 	) {
-		return res.status(400).json({ message: 'Passe um tipo válido' });
+		throw Error('Tipo inválido');
 	}
-	next();
 };
 
 export const validateTokenAdmin = (

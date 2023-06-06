@@ -4,7 +4,6 @@ import { updateVagaService } from '../service/updateVagaService';
 
 export const updateVagaController = async (req: Request, res: Response) => {
 	try {
-		console.log(req.body);
 		const updateVaga = await updateVagaService(
 			req.body,
 			req.params.id_vaga,

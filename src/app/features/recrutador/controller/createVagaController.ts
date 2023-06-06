@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { RepositoryRecrutador } from '../repository';
 import { createVagaService } from '../service/createVagaService';
+import { getIdByToken } from '../../../utils/getIdByToken';
 
 export const createVagaController = async (req: Request, res: Response) => {
 	try {
+		const uid = getIdByToken(req.headers.authorization as string);
+
 		const createVaga = await createVagaService(
-			req.params.id,
+			uid,
 			req.body,
 			new RepositoryRecrutador()
 		);

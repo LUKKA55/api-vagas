@@ -24,23 +24,20 @@ candidatoRoutes.post(
 
 candidatoRoutes.post('/login', validateBody, loginCandidatoController);
 candidatoRoutes.put(
-	'/:id',
+	'/updateOneCandidato',
 	validateCandidatoToken,
-	validateGetByIdCandidato,
 	validateCreateCandidato,
 	updateCandidatoController
 );
 candidatoRoutes.delete(
-	'/:id',
+	'/deleteOneCandidato',
 	validateCandidatoToken,
-	validateGetByIdCandidato,
 	deleteCandidatoController
 );
 candidatoRoutes.get('/vagas', validateCandidatoToken, getAllVagasController);
 candidatoRoutes.post(
-	'/:id/candidatura/:id_vaga',
+	'/candidatura/:id_vaga',
 	validateCandidatoToken,
-	validateGetByIdCandidato,
 	validateVaga,
 	candidaturaController
 );

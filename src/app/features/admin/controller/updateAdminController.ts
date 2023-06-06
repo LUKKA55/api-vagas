@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 import { updateAdminService } from '../service/updateAdminService';
 import { RepositoryAdmin } from '../repository';
+import { getIdByToken } from '../../../utils/getIdByToken';
 
 export const updateAdminController = async (req: Request, res: Response) => {
 	try {
+		const uid = getIdByToken(req.headers.authorization as string);
+
 		const updateAdmin = await updateAdminService(
 			req.body,
-			req.params.id,
+			uid,
 			new RepositoryAdmin()
 		);
 		res

@@ -125,9 +125,26 @@ export class RepositoryCandidato {
 	}
 
 	async candidatura(id: string, id_vaga: string) {
-		const createCandidatura = await DatabaseConnection.client.manager
+		await DatabaseConnection.client.manager
 			.getRepository(VagaCandidatoEntity)
 			.create({ uid: v4(), uidCandidato: id, uidVaga: id_vaga })
 			.save();
+		const find = await DatabaseConnection.client.manager
+			.getRepository(VagaEntity)
+			.findOne({ where: { uid: id_vaga } });
+		if (find !== null) {
+			const compileVaga = new Vaga(
+				find.uid,
+				find.descricao,
+				find.empresa,
+				find.dataLimite,
+				find.status,
+				find.uidRecrutador,
+				find.numeroMaximoCandidatos,
+				find.created_at,
+				find.updated_at
+			);
+			return compileVaga;
+		}
 	}
 }
