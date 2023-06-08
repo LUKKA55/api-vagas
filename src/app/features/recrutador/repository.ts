@@ -10,6 +10,7 @@ import { IVaga } from '../../models/interface/IVaga';
 import { Vaga } from '../../models/vaga';
 import jwt from 'jsonwebtoken';
 import { VagaCandidatoEntity } from '../../shared/database/entities/VagaCandidatoEntity';
+import { CacheRepository } from '../cache/cacheRepository';
 require('dotenv').config({ path: './src/app/envs/.env' });
 
 export class RepositoryRecrutador {
@@ -23,6 +24,7 @@ export class RepositoryRecrutador {
 	}
 
 	async updateRecrutador(id: string, data: IRecrutador) {
+		const cacheRepository = new CacheRepository();
 		await this.repository.update(
 			{ uid: id },
 			{
@@ -48,13 +50,19 @@ export class RepositoryRecrutador {
 				findRecrutador.updated_at,
 				findRecrutador.uidAdmin
 			);
+			await cacheRepository.del('all-recrutador');
 			return compileRecrutador;
 		}
 	}
 
 	async getAllRecrutador() {
+		const cacheRepository = new CacheRepository();
+		const cacheGetAllRecrutador = await cacheRepository.get('all-recrutador');
+		if (cacheGetAllRecrutador) {
+			return cacheGetAllRecrutador;
+		}
 		const getAllRecrutador = await this.repository.find();
-		return getAllRecrutador.map((recrutador) => {
+		const compileRecrutador = getAllRecrutador.map((recrutador) => {
 			return new Recrutador(
 				recrutador.uid,
 				recrutador.name,
@@ -67,9 +75,12 @@ export class RepositoryRecrutador {
 				recrutador.uidAdmin
 			);
 		});
+		await cacheRepository.set('all-recrutador', compileRecrutador);
+		return compileRecrutador;
 	}
 
 	async createVaga(id: string, data: IVaga) {
+		const cacheRepository = new CacheRepository();
 		const createVaga = this.vagaRepository.create({
 			uid: v4(),
 			descricao: data.descrição,
@@ -95,6 +106,9 @@ export class RepositoryRecrutador {
 			save.created_at,
 			save.updated_at
 		);
+
+		await cacheRepository.del(`vaga-recrutador-${id}`);
+		await cacheRepository.del('all-vaga');
 		return compileVaga;
 	}
 
@@ -126,8 +140,8 @@ export class RepositoryRecrutador {
 		return { token: token, uid: find.uid, name: find.name };
 	}
 
-	async updateVaga(data: IVaga, id_vaga: string) {
-		console.log('dado', data, id_vaga);
+	async updateVaga(id: string, data: IVaga, id_vaga: string) {
+		const cacheRepository = new CacheRepository();
 		await this.vagaRepository.update(
 			{ uid: id_vaga },
 			{
@@ -154,24 +168,40 @@ export class RepositoryRecrutador {
 				find.created_at,
 				find.updated_at
 			);
+
+			await cacheRepository.del(`vaga-recrutador-${id}`);
+			await cacheRepository.del('all-vaga');
 			return compileVaga;
 		}
 	}
 
 	async getAllVaga(id: string) {
-		return await this.vagaRepository.find({
+		const cacheRepository = new CacheRepository();
+		const cacheGetAllVagaByIdRecrutador = await cacheRepository.get(
+			`vaga-recrutador-${id}`
+		);
+		if (cacheGetAllVagaByIdRecrutador) {
+			return cacheGetAllVagaByIdRecrutador;
+		}
+		const findVaga = await this.vagaRepository.find({
 			where: { uidRecrutador: id },
 			relations: ['aplicacoes.candidato'],
 		});
+
+		await cacheRepository.set(`vaga-recrutador-${id}`, findVaga);
+		return findVaga;
 	}
 
-	async deleteVaga(id_vaga: string) {
+	async deleteVaga(id: string, id_vaga: string) {
+		const cacheRepository = new CacheRepository();
 		const vagaCandidato =
 			DatabaseConnection.client.manager.getRepository(VagaCandidatoEntity);
 		const relacoes = await vagaCandidato.find({
 			where: { uidVaga: id_vaga },
 		});
 		await vagaCandidato.remove(relacoes);
+		await cacheRepository.del(`vaga-recrutador-${id}`);
+		await cacheRepository.del('all-vaga');
 
 		return await this.vagaRepository.delete({ uid: id_vaga });
 	}

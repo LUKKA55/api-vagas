@@ -11,6 +11,7 @@ import { Recrutador } from '../../models/Recrutador';
 import jwt from 'jsonwebtoken';
 import { CandidatoEntity } from '../../shared/database/entities/CandidatoEntity';
 import { Candidato } from '../../models/Candidato';
+import { CacheRepository } from '../cache/cacheRepository';
 require('dotenv').config({ path: './src/app/envs/.env' });
 
 export class RepositoryAdmin {
@@ -20,6 +21,7 @@ export class RepositoryAdmin {
 	}
 
 	async createAdmin(data: IAdmin) {
+		const cacheRepository = new CacheRepository();
 		const createAdmin = this.repository.create({
 			uid: v4(),
 			name: data.name,
@@ -39,11 +41,17 @@ export class RepositoryAdmin {
 			save.created_at,
 			save.updated_at
 		);
+		await cacheRepository.del('all-admin');
 		return compileAdmin;
 	}
 
 	async getAll(tipo: string) {
+		const cacheRepository = new CacheRepository();
 		if (tipo === 'admin') {
+			const cacheGetAllAdmin = await cacheRepository.get('all-admin');
+			if (cacheGetAllAdmin) {
+				return cacheGetAllAdmin;
+			}
 			const getAllAdmin = await this.repository.find();
 			const compileAdmin = getAllAdmin.map((admin) => {
 				return new Admin(
@@ -56,9 +64,14 @@ export class RepositoryAdmin {
 					admin.updated_at
 				);
 			});
+			await cacheRepository.set('all-admin', compileAdmin);
 			return compileAdmin;
 		}
 		if (tipo === 'recrutador') {
+			const cacheGetAllRecrutador = await cacheRepository.get('all-recrutador');
+			if (cacheGetAllRecrutador) {
+				return cacheGetAllRecrutador;
+			}
 			const getAllRecrutador = await DatabaseConnection.client.manager
 				.getRepository(RecrutadorEntity)
 				.find();
@@ -75,9 +88,14 @@ export class RepositoryAdmin {
 					recrutador.uidAdmin
 				);
 			});
+			await cacheRepository.set('all-recrutador', compileRecrutador);
 			return compileRecrutador;
 		}
 		if (tipo === 'candidato') {
+			const cacheGetAllCandidato = await cacheRepository.get('all-candidato');
+			if (cacheGetAllCandidato) {
+				return cacheGetAllCandidato;
+			}
 			const getAllCandidato = await DatabaseConnection.client.manager
 				.getRepository(CandidatoEntity)
 				.find();
@@ -92,6 +110,7 @@ export class RepositoryAdmin {
 					candidato.updated_at
 				);
 			});
+			await cacheRepository.set('all-candidato', compileCandidato);
 			return compileCandidato;
 		}
 	}
@@ -114,10 +133,13 @@ export class RepositoryAdmin {
 	}
 
 	async deleteAdmin(id: string) {
+		const cacheRepository = new CacheRepository();
+		await cacheRepository.del('all-admin');
 		return await this.repository.delete({ uid: id });
 	}
 
 	async updateAdmin(id: string, data: IAdmin) {
+		const cacheRepository = new CacheRepository();
 		await this.repository.update(
 			{ uid: id },
 			{
@@ -141,12 +163,13 @@ export class RepositoryAdmin {
 				findAdmin.created_at,
 				findAdmin.updated_at
 			);
+			await cacheRepository.del('all-admin');
 			return compileAdmin;
 		}
 	}
 
 	async createRecrutador(id: string, data: IRecrutador) {
-		console.log('name', data);
+		const cacheRepository = new CacheRepository();
 		const createRecrutador = DatabaseConnection.client.manager
 			.getRepository(RecrutadorEntity)
 			.create({
@@ -175,10 +198,13 @@ export class RepositoryAdmin {
 			save.updated_at,
 			save.uidAdmin
 		);
+		await cacheRepository.del('all-recrutador');
 		return compileRecrutador;
 	}
 
 	async deleteRecrutador(id: string) {
+		const cacheRepository = new CacheRepository();
+		await cacheRepository.del('all-recrutador');
 		return await DatabaseConnection.client.manager
 			.getRepository(RecrutadorEntity)
 			.delete({ uid: id });
