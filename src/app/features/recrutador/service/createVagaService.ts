@@ -1,5 +1,6 @@
 import { IRecrutador } from '../../../models/interface/IRecrutador';
 import { IVaga } from '../../../models/interface/IVaga';
+import { CacheRepository } from '../../cache/cacheRepository';
 import { RepositoryRecrutador } from '../repository';
 
 export const createVagaService = async (
@@ -7,5 +8,10 @@ export const createVagaService = async (
 	data: IVaga,
 	repository: RepositoryRecrutador
 ) => {
-	return await repository.createVaga(id, data);
+	const cacheRepository = new CacheRepository();
+
+	const createVaga = await repository.createVaga(id, data);
+	cacheRepository.del(`vaga-recrutador-${id}`);
+	cacheRepository.del('all-vaga');
+	return createVaga;
 };

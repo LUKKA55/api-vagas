@@ -83,13 +83,46 @@ export const validateCandidatoToken = async (
 
 	jwt.verify(authorization, secret, (error, decoded) => {
 		if (Object(decoded).tipo !== 'candidato') {
-			res.status(404).json({ message: 'Apenas candidatos tem acesso' });
+			return res.status(404).json({ message: 'Apenas candidatos tem acesso' });
 		}
 		if (error) {
 			return res.status(401).json({ message: error.message });
 		}
 	});
 	next();
+};
+
+export const validateVagaCandidatura = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const uid = getIdByToken(req.headers.authorization as string);
+	const url = DatabaseConnection.client.manager.getRepository(VagaEntity);
+	const vaga = await url.findOne({ where: { uid: req.params.id_vaga } });
+	if (!vaga) {
+		return res.status(404).json({ message: 'ID de vaga não encontrado' });
+	}
+
+	if (vaga.status === false) {
+		return res.status(200).json({ message: 'Vaga não está mais disponível' });
+	}
+	if (vaga.dataLimite === new Date().toLocaleDateString()) {
+		await url.update({ uid: vaga.uid }, { status: false });
+		return res.status(200).json({ message: 'Data limite excedida' });
+	}
+
+	const candidatura = await DatabaseConnection.client.manager
+		.getRepository(VagaCandidatoEntity)
+		.findOne({
+			where: { uidCandidato: uid, uidVaga: req.params.id_vaga },
+		});
+	if (candidatura !== null) {
+		return res
+			.status(200)
+			.json({ message: 'Você já se candidatou a está vaga' });
+	}
+	return next();
 };
 
 export const validateVaga = async (
@@ -105,20 +138,11 @@ export const validateVaga = async (
 	}
 
 	if (vaga.status === false) {
-		res.status(200).json({ message: 'Vaga não está mais disponível' });
+		return res.status(200).json({ message: 'Vaga não está mais disponível' });
 	}
 	if (vaga.dataLimite === new Date().toLocaleDateString()) {
 		await url.update({ uid: vaga.uid }, { status: false });
-		res.status(200).json({ message: 'Data limite excedida' });
+		return res.status(200).json({ message: 'Data limite excedida' });
 	}
-
-	const candidatura = await DatabaseConnection.client.manager
-		.getRepository(VagaCandidatoEntity)
-		.findOne({
-			where: { uidCandidato: uid, uidVaga: req.params.id_vaga },
-		});
-	if (candidatura !== null) {
-		res.status(200).json({ message: 'Você já se candidatou a está vaga' });
-	}
-	next();
+	return next();
 };

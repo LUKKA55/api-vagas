@@ -1,4 +1,4 @@
-import { Repository, ReturnDocument } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CandidatoEntity } from '../../shared/database/entities/CandidatoEntity';
 import { DatabaseConnection } from '../../../main/database';
 import { ICandidato } from '../../models/interface/ICandidato';
@@ -7,10 +7,8 @@ import newDate from '../../utils/newDate';
 import { Candidato } from '../../models/Candidato';
 import jwt from 'jsonwebtoken';
 import { VagaCandidatoEntity } from '../../shared/database/entities/VagaCandidatoEntity';
-import { RepositoryRecrutador } from '../recrutador/repository';
 import { VagaEntity } from '../../shared/database/entities/VagaEntity';
 import { Vaga } from '../../models/vaga';
-import { CacheRepository } from '../cache/cacheRepository';
 require('dotenv').config({ path: './src/app/envs/.env' });
 
 export class RepositoryCandidato {
@@ -20,7 +18,6 @@ export class RepositoryCandidato {
 	}
 
 	async createCandidato(data: ICandidato) {
-		const cacheRepository = new CacheRepository();
 		const createCandidato = this.repository.create({
 			uid: v4(),
 			name: data.name,
@@ -40,7 +37,6 @@ export class RepositoryCandidato {
 			save.created_at,
 			save.updated_at
 		);
-		await cacheRepository.del('all-candidato');
 		return compileCandidato;
 	}
 
@@ -71,7 +67,6 @@ export class RepositoryCandidato {
 	}
 
 	async updateCandidato(data: ICandidato, id: string) {
-		const cacheRepository = new CacheRepository();
 		await this.repository.update(
 			{ uid: id },
 			{
@@ -92,29 +87,21 @@ export class RepositoryCandidato {
 				find.created_at,
 				find.updated_at
 			);
-			await cacheRepository.del('all-candidato');
 			return compileCandidato;
 		}
 	}
 
 	async deleteCandidato(id: string) {
-		const cacheRepository = new CacheRepository();
 		const vagaCandidato =
 			DatabaseConnection.client.manager.getRepository(VagaCandidatoEntity);
 		const relacoes = await vagaCandidato.find({
 			where: { uidCandidato: id },
 		});
 		await vagaCandidato.remove(relacoes);
-		await cacheRepository.del('all-candidato');
 		return await this.repository.delete({ uid: id });
 	}
 
 	async getAllVagas() {
-		const cacheRepository = new CacheRepository();
-		const cacheGetAllVaga = await cacheRepository.get('all-vaga');
-		if (cacheGetAllVaga) {
-			return cacheGetAllVaga;
-		}
 		const vagas = await DatabaseConnection.client.manager
 			.getRepository(VagaEntity)
 			.find();
@@ -132,8 +119,28 @@ export class RepositoryCandidato {
 				vaga.updated_at
 			);
 		});
-		await cacheRepository.set('all-vaga', compileVaga);
 		return compileVaga;
+	}
+
+	async getVagaById(id_vaga: string) {
+		const vaga = await DatabaseConnection.client.manager
+			.getRepository(VagaEntity)
+			.findOne({ where: { uid: id_vaga } });
+
+		if (vaga !== null) {
+			const compileVaga = new Vaga(
+				vaga.uid,
+				vaga.descricao,
+				vaga.empresa,
+				vaga.dataLimite,
+				vaga.status,
+				vaga.uidRecrutador,
+				vaga.numeroMaximoCandidatos,
+				vaga.created_at,
+				vaga.updated_at
+			);
+			return compileVaga;
+		}
 	}
 
 	async candidatura(id: string, id_vaga: string) {
@@ -158,5 +165,14 @@ export class RepositoryCandidato {
 			);
 			return compileVaga;
 		}
+	}
+
+	async getAllCandidaturas(id: string) {
+		const getCandidaturas = await DatabaseConnection.client.manager
+			.getRepository(VagaCandidatoEntity)
+			.find({ where: { uidCandidato: id }, relations: ['vaga'] });
+
+		const vagas = getCandidaturas.map((vaga) => vaga.vaga);
+		return vagas;
 	}
 }

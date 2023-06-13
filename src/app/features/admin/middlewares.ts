@@ -144,12 +144,7 @@ export const validateDeleteRecrutador = async (
 };
 
 export const validateTipo = (tipo: string) => {
-	if (
-		tipo !== 'admin' &&
-		tipo !== 'recrutador' &&
-		tipo !== 'candidato' &&
-		tipo !== undefined
-	) {
+	if (tipo !== 'admin' && tipo !== 'recrutador' && tipo !== 'candidato') {
 		throw Error('Tipo inválido');
 	}
 };

@@ -1,5 +1,13 @@
+import { CacheRepository } from '../../cache/cacheRepository';
 import { RepositoryCandidato } from '../repository';
 
 export const getAllVagasService = async (repository: RepositoryCandidato) => {
-	return await repository.getAllVagas();
+	const cacheRepository = new CacheRepository();
+	const cacheGetAllVaga = await cacheRepository.get('all-vaga');
+	if (cacheGetAllVaga) {
+		return cacheGetAllVaga;
+	}
+	const allVagas = await repository.getAllVagas();
+	cacheRepository.set('all-vaga', allVagas);
+	return allVagas;
 };

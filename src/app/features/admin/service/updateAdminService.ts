@@ -1,4 +1,5 @@
 import { IAdmin } from '../../../models/interface/IAdmin';
+import { CacheRepository } from '../../cache/cacheRepository';
 import { RepositoryAdmin } from '../repository';
 
 export const updateAdminService = async (
@@ -6,5 +7,9 @@ export const updateAdminService = async (
 	id: string,
 	repository: RepositoryAdmin
 ) => {
-	return await repository.updateAdmin(id, data);
+	const cacheRepository = new CacheRepository();
+
+	const updateAdmin = await repository.updateAdmin(id, data);
+	cacheRepository.del('all-admin');
+	return updateAdmin;
 };

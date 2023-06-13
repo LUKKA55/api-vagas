@@ -1,4 +1,5 @@
 import { IRecrutador } from '../../../models/interface/IRecrutador';
+import { CacheRepository } from '../../cache/cacheRepository';
 import { RepositoryRecrutador } from '../repository';
 
 export const updateRecrutadorService = async (
@@ -6,5 +7,8 @@ export const updateRecrutadorService = async (
 	id: string,
 	repository: RepositoryRecrutador
 ) => {
-	return await repository.updateRecrutador(id, data);
+	const cacheRepository = new CacheRepository();
+	const updateRecrutador = await repository.updateRecrutador(id, data);
+	cacheRepository.del('all-recrutador');
+	return updateRecrutador;
 };

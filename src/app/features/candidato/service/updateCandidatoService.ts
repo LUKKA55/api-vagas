@@ -1,4 +1,5 @@
 import { ICandidato } from '../../../models/interface/ICandidato';
+import { CacheRepository } from '../../cache/cacheRepository';
 import { RepositoryCandidato } from '../repository';
 
 export const updateCandidatoService = async (
@@ -6,5 +7,9 @@ export const updateCandidatoService = async (
 	id: string,
 	repository: RepositoryCandidato
 ) => {
-	return await repository.updateCandidato(data, id);
+	const cacheRepository = new CacheRepository();
+
+	const updateCandidato = await repository.updateCandidato(data, id);
+	await cacheRepository.del('all-candidato');
+	return updateCandidato;
 };

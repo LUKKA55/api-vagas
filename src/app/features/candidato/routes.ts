@@ -6,12 +6,15 @@ import {
 	validateCreateCandidato,
 	validateGetByIdCandidato,
 	validateVaga,
+	validateVagaCandidatura,
 } from './middleware';
 import { loginCandidatoController } from './controller/loginCandidatoController';
 import { updateCandidatoController } from './controller/updateCandidatoController';
 import { deleteCandidatoController } from './controller/deleteCandidatoController';
 import { getAllVagasController } from './controller/getAllVagasController';
 import { candidaturaController } from './controller/candidatutaController';
+import { getAllCandidaturasController } from './controller/getAllCandidaturasController';
+import { getVagaByIdController } from './controller/getVagaByIdController';
 
 export const candidatoRoutes = Router();
 
@@ -21,7 +24,6 @@ candidatoRoutes.post(
 	validateCreateCandidato,
 	createCandidatoController
 );
-
 candidatoRoutes.post('/login', validateBody, loginCandidatoController);
 candidatoRoutes.put(
 	'/updateOneCandidato',
@@ -34,10 +36,21 @@ candidatoRoutes.delete(
 	validateCandidatoToken,
 	deleteCandidatoController
 );
-candidatoRoutes.get('/vagas', validateCandidatoToken, getAllVagasController);
+candidatoRoutes.get(
+	'/vagas/vagaById/:id_vaga',
+	validateCandidatoToken,
+	validateVaga,
+	getVagaByIdController
+);
 candidatoRoutes.post(
 	'/candidatura/:id_vaga',
 	validateCandidatoToken,
-	validateVaga,
+	validateVagaCandidatura,
 	candidaturaController
 );
+candidatoRoutes.get(
+	'/candidaturas',
+	validateCandidatoToken,
+	getAllCandidaturasController
+);
+candidatoRoutes.get('/vagas', validateCandidatoToken, getAllVagasController);

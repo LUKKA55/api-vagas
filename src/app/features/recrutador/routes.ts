@@ -3,7 +3,6 @@ import { updateRecrutadorController } from './controller/updateRecrutadorControl
 import {
 	validateBody,
 	validateCreateVaga,
-	validateGetByIdRecrutador,
 	validateIdRecrutadorVaga,
 	validateTokenRecrutador,
 	validateUpdateRecrutador,
